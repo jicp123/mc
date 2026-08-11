@@ -44,11 +44,14 @@ descendcount = 0
 findtimer = 3
 
 class Methods():
- def __init__(self, action):
+ def __init__(self, choice):
     self._weapon = player_weapon
     self._pickaxe = player_pickaxe
-    self._action = action
+    self._action = choice
  
+ def __str__(self):
+   ...
+
  def craft_item(self, item):
    global inventory, player_weapon
    item = item.lower()
@@ -124,21 +127,20 @@ class Methods():
         print("You don't have wood...")
 
  def actions_based_on_location(self, choice):
-    if choice in ["Desert", "Ocean"]:
-        return self._action("Find", "Try to find a structure")
-    elif choice in ["Village", "Shipwreck"]:
-        return self._action("Loot", "Loot the nearby structure")
-    elif choice in ["Cave", "Ravine"]:
-        return self._action("Descend", "Go deeper in the caves, who knows what you'll find?")
-    elif choice in ["Forest", "Plains"]:
-        return self._action("Hunt", "Try to find some animals")
+    if choice in ["desert", "ocean"]:
+        return "Find", "Try to find a structure"
+    elif choice in ["village", "shipwreck"]:
+        return "Loot", "Loot the nearby structure"
+    elif choice in ["cave", "ravine"]:
+        return "Descend", "Go deeper in the caves, who knows what you'll find?"
+    elif choice in ["forest", "plains"]:
+        return "Hunt", "Try to find some animals"
     else:
-        print("Unknown location.")
-        return None
+        return "Unknown location.", "Invalid."
 
  def action(self, specifics1, specifics2):
     player_action = input(f"""What would you like to do?
-[ 
+ [ 
   * Mine    - You get a resource depending on the area
   * Explore - Choose another set of areas
   * Tools   - Check what tools you have currently
@@ -146,8 +148,8 @@ class Methods():
   * Smelt   - Smelt the ores you got
   * {specifics1} - {specifics2}  
   * Quit    - Prematurely end the game                                          
-] 
-> """).lower()
+ ] 
+ > """).lower().strip()
     return player_action
 
  def sheep_hunt(self, sheep_hp, original_hp):
@@ -370,7 +372,7 @@ pois = ["Forest", "Forest", "Forest", "Forest", "Forest","Forest", "Forest",
         "Ravine", "Ravine"]
 
 def main():
- methods = Methods()
+ 
  print("Welcome to my game! The current objective to win is to get a Diamond Pickaxe and Diamond Sword!")
  time.sleep(0.5)
  print("Goodluck!")
@@ -385,16 +387,17 @@ def main():
     print("You don't see that anywhere...")
     print(poiss)
     choice = input("Where would you like to go?: ").lower()
-
+ methods = Methods(choice)
  print(f"You chose {choice}")
  time.sleep(1)
  print(f"You currently have {inventory}")
  time.sleep(1)
 
- methods.Methods()
 
  while player_weapon != "Diamond Sword" and player_pickaxe != "Diamond Pickaxe": 
-    player_action = methods.actions_based_on_location(choice)
+    spe1, spe2 = methods.actions_based_on_location(choice)
+    player_action = methods.action(spe1, spe2)
+
     if player_action == "quit":
      break
 
@@ -417,16 +420,16 @@ def main():
       time.sleep(1)
       player_action = methods.actions_based_on_location(choice).lower() 
  
-    if player_action == "mine" and choice == "Desert":
+    if player_action == "mine" and choice == "desert":
      print("Nothing but sand...")
      player_action = methods.actions_based_on_location(choice)
-    if player_action == "mine" and (choice == "Forest" or choice == "Plains"):
+    if player_action == "mine" and (choice == "forest" or choice == "plains"):
        methods.wood()
        player_action = methods.actions_based_on_location(choice)
-    if player_action == "mine" and (choice == "Village" or choice == "Shipwreck"):
+    if player_action == "mine" and (choice == "village" or choice == "shipwreck"):
        methods.wood()
        player_action = methods.actions_based_on_location(choice)
-    if player_action == "mine" and (choice == "Cave" or choice =="Ravine"):
+    if player_action == "mine" and (choice == "cave" or choice =="ravine"):
        if player_pickaxe == "Fists":
           print("You don't even have a pickaxe...")
        else:
@@ -523,8 +526,6 @@ def main():
        print("Invalid input, try again.")
        time.sleep(0.5)
        
-
-         
 
 if player_weapon == "Diamond Sword" and player_pickaxe == "Diamond Pickaxe":
    print("Thanks for playing")
