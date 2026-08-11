@@ -1,18 +1,80 @@
-
 import time
 import random
 import sys
-inventory = {"Wood": 0, "Stick": 0, "Coal": 0, "Wool": 0, "Cobblestone": 0, "Iron": 0, "Gold": 0, "Diamond": 0,}
-ores = {"Iron Ore": 0, "Gold Ore": 0,}
-loot_check = {"Village":False, "Shipwreck":False}
-weapons = {"Fists": 0, "Wooden Sword": 1, "Stone Sword": 2, "Iron Sword": 3, "Diamond Sword": 4,}
-pickaxes = {"Fists": 0, "Wooden Pickaxe": 1, "Stone Pickaxe": 2, "Iron Pickaxe": 3, "Diamond Pickaxe": 5,} 
-player_weapon = "Fists"
-player_pickaxe = "Fists"
-weapon_dmg = {"Fists": 1, "Wooden Sword": 2, "Stone Sword": 3, "Iron Sword": 4, "Diamond Sword": 5,}
-player_damage = weapon_dmg.get(player_weapon, 0)
 
-recipes = {
+
+
+
+#player_damage = weapon_dmg.get(player_weapon, 0)
+
+
+
+
+
+descendcount = 0
+findtimer = 3
+
+class Player():
+   def __init__(self):
+      self.health = 20
+      self.inventory = {"Wood": 0, 
+                        "Stick": 0, 
+                        "Coal": 0, 
+                        "Wool": 0, 
+                        "Raw Meat": 0,
+                        "Cooked Meat": 0,
+                        "Leather": 0,
+                        "Cobblestone": 0, 
+                        "Iron": 0, 
+                        "Gold": 0,
+                        "Diamond": 0,
+                          }
+      self.tools = {
+      "Wooden Pickaxe": False,
+       "Stone Pickaxe":False,
+         "Iron Pickaxe":False,
+       "Diamond Pickaxe":False,
+      "Furnace":False, 
+       "Bed":False, 
+       "Wooden Sword":False, 
+      "Stone Sword":False, 
+      "Iron Sword":False, 
+      "Diamond Sword":False,
+            }
+      self.weapon = "Fists"
+      self.tool = "Fists"
+     
+      self.ores =  {"Iron Ore": 0, "Gold Ore": 0,}
+      self.weaprank = {"Fists": 0, "Wooden Sword": 1, "Stone Sword": 2, "Iron Sword": 3, "Diamond Sword": 4,}
+      self.pickrank = {"Fists": 0, "Wooden Pickaxe": 1, "Stone Pickaxe": 2, "Iron Pickaxe": 3, "Diamond Pickaxe": 5,} 
+      self.weapdmg =  {"Fists": 1, "Wooden Sword": 2, "Stone Sword": 3, "Iron Sword": 4, "Diamond Sword": 5,}
+
+      @property
+      def dmg(self):
+         return self.weapdmg.get(self.weap, 1)
+
+      def upgrade_weapon(self, new_weapon):
+           if self.weaprank.get(new_weapon, 0) > self.weaprank.get(self.weapon, 0):
+            print(f"Your current weapon now is {new_weapon}")
+            self.weapon = new_weapon
+           else:
+            print("You already have a better weapon than this...")
+
+      def upgrade_pick(self, new_pickaxe):
+        if self.pickrank.get(new_pickaxe, 0) > self.pickrank.get(self.tool, 0):
+          print(f"Your current pickaxe now is {new_pickaxe}")
+          self.tool = new_pickaxe
+        else:
+         print("You already have a better pickaxe than this...")
+      
+class Game():
+ def __init__(self):
+    self.player = Player()
+    self.lootcheck = {"Village":False, "Shipwreck":False}
+    self.descendcount = 0
+    self.findtimer = 3
+    self._daycount = 0
+    self.recipes = {
     "Wooden Pickaxe": {"Wood": 3, "Stick": 2},
     "Stone Pickaxe": {"Stick": 2, "Cobblestone": 3},
     "Iron Pickaxe": {"Stick": 2, "Iron": 3},
@@ -25,30 +87,15 @@ recipes = {
     "Stone Sword": {"Stick": 1, "Cobblestone": 2},
     "Iron Sword": {"Stick": 1, "Iron": 2},
     "Diamond Sword": {"Diamond": 2, "Stick": 1,}
-}
-
-tools_check = {
-    "Wooden Pickaxe": False,
-    "Stone Pickaxe":False,
-    "Iron Pickaxe":False,
-    "Diamond Pickaxe":False,
-    "Furnace":False, 
-    "Bed":False, 
-    "Wooden Sword":False, 
-    "Stone Sword":False, 
-    "Iron Sword":False, 
-    "Diamond Sword":False,
-}
-
-descendcount = 0
-findtimer = 3
-
-class Methods():
- def __init__(self, choice):
-    self._weapon = player_weapon
-    self._pickaxe = player_pickaxe
-    self._action = choice
- 
+            }  
+    self.pois = ["Forest", "Forest", "Forest", "Forest", "Forest","Forest", "Forest",
+        "Plains", "Plains", "Plains", "Plains", "Plains","Plains", "Plains",
+        "Cave", "Cave", "Cave", "Cave", "Cave",
+        "Village", 
+        "Desert", "Desert",
+        "Shipwreck", 
+        "Ravine", "Ravine"]
+    
  def __str__(self):
    ...
 
@@ -56,14 +103,14 @@ class Methods():
    global inventory, player_weapon
    item = item.lower()
    matched_item = None
-   for recipe_name in recipes:
+   for recipe_name in self.recipes:
         if recipe_name.lower() == item:
             matched_item = recipe_name
             break
    if not matched_item:
       print("What are you trying to craft?")
       return
-   required = recipes[matched_item]
+   required = self.player.recipes[matched_item]
    for res, qty in required.items():
       if inventory.get(res, 0) < qty:
          print(f"Not enough {res} to craft {matched_item}.")
@@ -75,34 +122,12 @@ class Methods():
    print(f"You crafted a/an {matched_item}!")
    return matched_item
     
- def upgrade_weapon(new_weapon):
-     global player_weapon, player_damage
-     current_rank = weapons.get(player_weapon, 0)
-     new_rank = weapons.get(new_weapon, 0)
-     if new_rank > current_rank:
-      player_weapon = new_weapon
-      print(f"Your current weapon now is {new_weapon}")
-      player_damage = weapon_dmg.get(player_weapon, 0)
-
-     else:
-      print("You already have a better weapon than this...")
-
- def upgrade_pick(new_pickaxe):
-     global player_pickaxe
-     current_rank = pickaxes.get(player_pickaxe, 0)
-     new_rank = pickaxes.get(new_pickaxe, 0)
-     if new_rank > current_rank:
-      player_pickaxe = new_pickaxe
-      print(f"Your current pickaxe now is {new_pickaxe}")
-     else:
-      print("You already have a better pickaxe than this...")
 
  def wood(self):
     resource1 = random.randint(2,5)
-    print("Mining wood...")
-    time.sleep(0.7)
-    print(f"You got {resource1} wood!")
     inventory["Wood"] = inventory["Wood"] + resource1
+    return {resource1} 
+    
 
  def stone(self):
     resource2 = random.randint(4,10)
@@ -126,14 +151,14 @@ class Methods():
     else:
         print("You don't have wood...")
 
- def actions_based_on_location(self, choice):
-    if choice in ["desert", "ocean"]:
+ def actions_based_on_location(self, loc):
+    if loc in ["desert", "ocean"]:
         return "Find", "Try to find a structure"
-    elif choice in ["village", "shipwreck"]:
+    elif loc in ["village", "shipwreck"]:
         return "Loot", "Loot the nearby structure"
-    elif choice in ["cave", "ravine"]:
+    elif loc in ["cave", "ravine"]:
         return "Descend", "Go deeper in the caves, who knows what you'll find?"
-    elif choice in ["forest", "plains"]:
+    elif loc in ["forest", "plains"]:
         return "Hunt", "Try to find some animals"
     else:
         return "Unknown location.", "Invalid."
@@ -363,13 +388,8 @@ class Methods():
         findtimer = 3
    
 
-pois = ["Forest", "Forest", "Forest", "Forest", "Forest","Forest", "Forest",
-        "Plains", "Plains", "Plains", "Plains", "Plains","Plains", "Plains",
-        "Cave", "Cave", "Cave", "Cave", "Cave",
-        "Village", 
-        "Desert", "Desert",
-        "Shipwreck", 
-        "Ravine", "Ravine"]
+
+
 
 def main():
  
@@ -399,7 +419,7 @@ def main():
     player_action = methods.action(spe1, spe2)
 
     if player_action == "quit":
-     break
+     sys.exit("See you next time!")
 
     if player_action == "explore":
       poiss = random.sample(list(set(pois)), 3)
@@ -424,10 +444,12 @@ def main():
      print("Nothing but sand...")
      player_action = methods.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "forest" or choice == "plains"):
-       methods.wood()
+       count = methods.wood()
+       print(count)
        player_action = methods.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "village" or choice == "shipwreck"):
-       methods.wood()
+       count = methods.wood()
+       print(count)
        player_action = methods.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "cave" or choice =="ravine"):
        if player_pickaxe == "Fists":
@@ -522,17 +544,15 @@ def main():
        methods.find()
        player_action = methods.actions_based_on_location(choice)
 
+    if player_weapon == "Diamond Sword" and player_pickaxe == "Diamond Pickaxe":
+     print("You got a diamond sword and a diamond pickaxe! Congrats!")
+     time.sleep(0.5)
+     print("Thanks for playing!")
     else:
        print("Invalid input, try again.")
        time.sleep(0.5)
        
 
-if player_weapon == "Diamond Sword" and player_pickaxe == "Diamond Pickaxe":
-   print("Thanks for playing")
 
-else:
-   print("thanks for playing!")
-
-    
 if __name__ == "__main__":
    main()
