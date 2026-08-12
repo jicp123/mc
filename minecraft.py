@@ -7,10 +7,6 @@ import sys
 
 #player_damage = weapon_dmg.get(player_weapon, 0)
 
-
-
-
-
 descendcount = 0
 findtimer = 3
 
@@ -100,7 +96,6 @@ class Game():
    ...
 
  def craft_item(self, item):
-   global inventory, player_weapon
    item = item.lower()
    matched_item = None
    for recipe_name in self.recipes:
@@ -112,20 +107,20 @@ class Game():
       return
    required = self.player.recipes[matched_item]
    for res, qty in required.items():
-      if inventory.get(res, 0) < qty:
+      if self.player.inventory.get(res, 0) < qty:
          print(f"Not enough {res} to craft {matched_item}.")
          return
    for res, qty in required.items():
-      inventory[res] -= qty
+      self.player.inventory[res] -= qty
 
-   inventory[matched_item] = inventory.get(matched_item, 0) + 1
+   self.player.inventory[matched_item] = self.player.inventory.get(matched_item, 0) + 1
    print(f"You crafted a/an {matched_item}!")
    return matched_item
     
 
  def wood(self):
     resource1 = random.randint(2,5)
-    inventory["Wood"] = inventory["Wood"] + resource1
+    self.player.inventory["Wood"] = self.player.inventory["Wood"] + resource1
     return {resource1} 
     
 
@@ -135,18 +130,18 @@ class Game():
     print("Mining stone...")
     time.sleep(0.7)
     print(f"You got {resource2} cobblestones!")
-    inventory["Cobblestone"] = inventory["Cobblestone"] + resource2
+    self.player.inventory["Cobblestone"] = self.player.inventory["Cobblestone"] + resource2
     time.sleep(1)
     if resource7roll == 1:
        resource7 = random.randint(1,2)
        print(f"You also got {resource7} coal!")
-       inventory["Coal"] = inventory["Coal"] + resource7
+       self.player.inventory["Coal"] = self.player.inventory["Coal"] + resource7
 
 
  def stick(self):
-    if inventory.get("Wood", 0) >=1:
-        inventory["Wood"] -= 1
-        inventory["Stick"] = inventory.get("Stick", 0) + 4
+    if self.player.inventory.get("Wood", 0) >=1:
+        self.player.inventory["Wood"] -= 1
+        self.player.inventory["Stick"] = self.player.inventory.get("Stick", 0) + 4
         print("You crafted 4 Sticks!")
     else:
         print("You don't have wood...")
@@ -170,7 +165,7 @@ class Game():
   * Explore - Choose another set of areas
   * Tools   - Check what tools you have currently
   * Craft   - Craft something from a recipe
-  * Smelt   - Smelt the ores you got
+  * Smelt   - Smelt ores or cook food!
   * {specifics1} - {specifics2}  
   * Quit    - Prematurely end the game                                          
  ] 
@@ -181,13 +176,13 @@ class Game():
      print(f"Sheep HP: {sheep_hp}/{original_hp}")
      attack = input(f"""What do you want to do?,
      [ 
-     * Attack - Attack the sheep, Your current weapon is {player_weapon}
+     * Attack - Attack the sheep, Your current weapon is {self.player.weapon}
      * Run    - Leave it for another day...
      ]
      > """).lower()
      if attack == "run":
           return "player_ran"
-     if attack == "attack" and player_weapon == "Fists":
+     if attack == "attack" and self.player.weapon == "Fists":
           print("You tried to attack the sheep with your fists!...")
           time.sleep(1)
           print("You missed... The sheep ran away...")
@@ -195,8 +190,8 @@ class Game():
      
      if attack == "attack": 
           while sheep_hp >= 0:
-             sheep_hp -= player_damage 
-             print(f"You dealt {player_damage} damage!")
+             sheep_hp -= self.player.weapdmg 
+             print(f"You dealt {self.player.weapdmg} damage!")
              time.sleep(1)
              print(f"Sheep HP {max(sheep_hp, 0)}/{original_hp}")
              time.sleep(1)
@@ -209,12 +204,12 @@ class Game():
              if sheep_hp <= 0:
                 resource4 = random.randint(1,2)
                 print(f"You found {resource4} Wool!")
-                inventory["Wool"] = inventory["Wool"] + resource4
+                self.player.inventory["Wool"] = self.player.inventory["Wool"] + resource4
                 return "Slain"
              
              attack = input(f"""The sheep is attempting to run away..,
               [ 
-               * Attack - Attack the sheep, Your current weapon is {player_weapon}
+               * Attack - Attack the sheep, Your current weapon is {self.player.weapon}
                * Run    - Leave it for another day...
               ]
               > """).lower()
@@ -230,7 +225,7 @@ class Game():
    resource5 = random.randint(2,4)
    print(f"You found {resource5} iron!")
    time.sleep(1)
-   inventory["Iron"] = inventory["Iron"] + resource5
+   self.player.inventory["Iron"] = self.player.inventory["Iron"] + resource5
    if structure == "Blacksmith":
       resource6 = random.randint(1,10)
       if resource6 == 7:
@@ -243,58 +238,57 @@ class Game():
          print("Nevermind, It was just trash...")
 
  def descend(self):
-   global descendcount, ores, inventory
-   if inventory.get("Torches", 0) < 1:
+   if self.player.inventory.get("Torches", 0) < 1:
       print("It's too dark too see anything...")
       time.sleep(1)
       print("You can't pass through")
    else:
-      while inventory.get("Torches") >=1 :
-         inventory["Torches"] -= 1
-         print(f"Descending into the caves... (Times descended: {descendcount}.) Remaining Torches:",inventory["Torches"])
-         descendcount += 1
-         if 3 <= descendcount <= 5:
+      while self.player.inventory.get("Torches") >=1 :
+         self.player.inventory["Torches"] -= 1
+         print(f"Descending into the caves... (Times descended: {self.descendcount}.) Remaining Torches:",self.player.inventory["Torches"])
+         self.descendcount += 1
+         if 3 <= self.descendcount <= 5:
             ironchance = random.randint(1,2)
-            if ironchance == 1 and (player_pickaxe == "Stone Pickaxe" or player_pickaxe == "Iron Pickaxe"):
+            if ironchance == 1 and (self.player.tool == "Stone Pickaxe" or self.player.tool == "Iron Pickaxe"):
                print("You found Iron!")
                time.sleep(1)
                ironcount = random.randint(2,5)
                print(f"You got {ironcount} iron ore!")
                time.sleep(1)
-               ores["Iron Ore"] = ores.get("Iron Ore", 0) + ironcount
-            elif ironchance == 1 and (player_pickaxe == "Fists" or player_pickaxe == "Wooden Pickaxe"):
+               self.player.ores["Iron Ore"] = self.player.ores.get("Iron Ore", 0) + ironcount
+            elif ironchance == 1 and (self.player.tool == "Fists" or self.player.tool == "Wooden Pickaxe"):
                print("You found Iron! But you failed to mine it...")
             else:
                pass
          else:
             pass      
 
-         if descendcount >= 5:
+         if self.descendcount >= 5:
             goldchance = random.randint(1,2)
-            if goldchance == 1 and (player_pickaxe == "Stone Pickaxe" or player_pickaxe == "Iron Pickaxe"):
+            if goldchance == 1 and (self.player.tool == "Stone Pickaxe" or self.player.tool == "Iron Pickaxe"):
                print("You found Gold!")
                time.sleep(1)
                goldcount = random.randint(2,5)
                print(f"You got {goldcount} gold ore!")
                time.sleep(1)
-               ores["Gold Ore"] = ores.get("Gold Ore", 0) + goldcount
-            elif goldchance == 1 and (player_pickaxe == "Fists" or player_pickaxe == "Wooden Pickaxe"):
+               self.player.ores["Gold Ore"] = self.player.ores.get("Gold Ore", 0) + goldcount
+            elif goldchance == 1 and (self.player.tool == "Fists" or self.player.tool == "Wooden Pickaxe"):
                print("You found Gold! But you failed to mine it...")
             else:
                pass
          else:
             pass 
          
-         if descendcount >= 10:
+         if self.descendcount >= 10:
             diachance = random.randint(1,3)
-            if diachance == 1 and player_pickaxe == "Iron Pickaxe":
+            if diachance == 1 and self.player.tool == "Iron Pickaxe":
                print("You found Diamonds!")
                time.sleep(1)
                diacount = random.randint(1,4)
                print(f"You got {diacount} diamond/s!")
                time.sleep(1)
                inventory["Diamond"] = inventory.get("Diamond", 0) + diacount
-            elif diachance == 1 and (player_pickaxe == "Fists" or player_pickaxe == "Wooden Pickaxe" or player_pickaxe == "Stone Pickaxe"):
+            elif diachance == 1 and (self.player.tool != ["Iron Pickaxe", "Diamond Pickaxe"]):
                print("You found Diamonds! But you failed to mine it...")
             else:
                pass
@@ -309,8 +303,8 @@ class Game():
          descend_choice = input("What would you like to do?: ").lower()
          if descend_choice == "leave":
             print("You went back up the caves.")
-            print(f"Your current ores are: Iron Ore - {ores.get('Iron Ore', 0)}, Gold Ore - {ores.get('Gold Ore', 0)}")
-            descendcount = 0
+            print(f"Your current ores are: Iron Ore - {self.player.ores.get('Iron Ore', 0)}, Gold Ore - {self.player.ores.get('Gold Ore', 0)}")
+            self.descendcount = 0
             break
          if descend_choice == "descend":
             pass
@@ -318,25 +312,24 @@ class Game():
             print("Invalid response!")
 
  def smelting(self, ore, ingot):
-   global inventory, ores
-   print(ores)
-   print(f"Remaining coal:",inventory.get("Coal", 0))
-   print(f"You have {ores.get(ore, 0)} {ore}")
+   print(self.player.ores)
+   print(f"Remaining coal:",self.player.inventory.get("Coal", 0))
+   print(f"You have {self.player.ores.get(ore, 0)} {ore}")
    try:
        howmanysmelt = int(input("How many are you going to smelt?: "))
    except ValueError:
         print("Invalid number!")
         return
-   while howmanysmelt > ores.get(ore, 0) or howmanysmelt > inventory.get("Coal", 0):
+   while howmanysmelt > self.player.ores.get(ore, 0) or howmanysmelt > self.player.inventory.get("Coal", 0):
         print("You're trying to smelt more than you have!")
         try:
             howmanysmelt = int(input("How many are you going to smelt?: "))
         except ValueError:
             print("Invalid number!")
             return
-   ores[ore] -= howmanysmelt
-   inventory["Coal"] -= howmanysmelt
-   inventory[ingot] = inventory.get(ingot, 0) + howmanysmelt
+   self.player.ores[ore] -= howmanysmelt
+   self.player.inventory["Coal"] -= howmanysmelt
+   self.player.inventory[ingot] = self.player.inventory.get(ingot, 0) + howmanysmelt
    print(f"You smelted {howmanysmelt} {ore} into {ingot}!")
 
  def find(self):
@@ -387,42 +380,42 @@ class Game():
         print("You got tired of exploring and went back.")
         findtimer = 3
    
-
-
-
-
-def main():
+ def main(self):
  
- print("Welcome to my game! The current objective to win is to get a Diamond Pickaxe and Diamond Sword!")
- time.sleep(0.5)
- print("Goodluck!")
- time.sleep(1)
- print("You just spawned in a minecraft world, you see a/an...")
- time.sleep(1)
- poiss = random.sample(list(set(pois)), 3)
- print(poiss)
- poiss_lower = [p.lower() for p in poiss]
- choice = input("Where would you like to go?: ").lower()
- while choice not in poiss_lower:
+  print("Welcome to my game! The current objective to win is to get a Diamond Pickaxe and Diamond Sword!")
+  time.sleep(0.5)
+  print("Goodluck!")
+  time.sleep(1)
+  print("You just spawned in a minecraft world, you see a/an...")
+  time.sleep(1)
+  poiss = random.sample(list(set(self.pois)), 3)
+  print(poiss)
+  poiss_lower = [p.lower() for p in poiss]
+  choice = input("Where would you like to go?: ").lower()
+  while choice not in poiss_lower:
     print("You don't see that anywhere...")
     print(poiss)
     choice = input("Where would you like to go?: ").lower()
- methods = Methods(choice)
- print(f"You chose {choice}")
- time.sleep(1)
- print(f"You currently have {inventory}")
- time.sleep(1)
+  print(f"You chose {choice}")
+  time.sleep(1)
+  print(f"You currently have {self.player.inventory}")
+  time.sleep(1)
 
 
- while player_weapon != "Diamond Sword" and player_pickaxe != "Diamond Pickaxe": 
-    spe1, spe2 = methods.actions_based_on_location(choice)
-    player_action = methods.action(spe1, spe2)
+  while True:
+    if self.player.weapon == "Diamond Sword" and self.player.weapon == "Diamond Pickaxe":
+     print("You got a diamond sword and a diamond pickaxe! Congrats!")
+     time.sleep(0.5)
+     print("Thanks for playing!")
+     break
+    spe1, spe2 = self.actions_based_on_location(choice)
+    player_action = self.action(spe1, spe2)
 
     if player_action == "quit":
      sys.exit("See you next time!")
 
     if player_action == "explore":
-      poiss = random.sample(list(set(pois)), 3)
+      poiss = random.sample(list(set(self.pois)), 3)
       print(poiss)
       poiss_lower = [p.lower() for p in poiss]
       choice = input("Where would you like to go next?: ").lower()
@@ -436,35 +429,35 @@ def main():
           break 
       print(f"You chose {choice}")
       time.sleep(1)
-      print(f"You currently have {inventory}")
+      print(f"You currently have {self.player.inventory}")
       time.sleep(1)
-      player_action = methods.actions_based_on_location(choice).lower() 
+      player_action = self.actions_based_on_location(choice).lower() 
  
     if player_action == "mine" and choice == "desert":
      print("Nothing but sand...")
-     player_action = methods.actions_based_on_location(choice)
+     player_action = self.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "forest" or choice == "plains"):
-       count = methods.wood()
+       count = self.wood()
        print(count)
-       player_action = methods.actions_based_on_location(choice)
+       player_action = self.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "village" or choice == "shipwreck"):
-       count = methods.wood()
+       count = self.wood()
        print(count)
-       player_action = methods.actions_based_on_location(choice)
+       player_action = self.actions_based_on_location(choice)
     if player_action == "mine" and (choice == "cave" or choice =="ravine"):
-       if player_pickaxe == "Fists":
+       if self.player.tool == "Fists":
           print("You don't even have a pickaxe...")
        else:
-          methods.stone()
-       player_action = methods.actions_based_on_location(choice)
+          self.stone()
+       player_action = self.actions_based_on_location(choice)
 
     if player_action == "hunt":
        print("You found a sheep!")
        time.sleep(1)
        sheep_hp = random.randint(5,10)
        original_hp = sheep_hp 
-       methods.sheep_hunt(sheep_hp, original_hp)
-       player_action = methods.actions_based_on_location(choice)
+       self.sheep_hunt(sheep_hp, original_hp)
+       player_action = self.actions_based_on_location(choice)
 
     if player_action == "craft":
        print("""Here are the craftable items,
@@ -482,72 +475,78 @@ def main():
         ] 
        """)
        time.sleep(1)
-       print(f"You currently have {inventory}")
+       print(f"You currently have {self.player.inventory}")
        crafting = input("What would you like to craft?: ").lower()
        if crafting == "sticks" or crafting == "stick":
-          methods.stick()
+          self.stick()
        else:
-          weap = methods.craft_item(crafting)
-          if weap in weapons:
-                  methods.upgrade_weapon(weap)
-          if weap in pickaxes:
-                  methods.upgrade_pick(weap)
-       player_action = methods.actions_based_on_location(choice)
+          weap = self.craft_item(crafting)
+          if weap in self.player.weaprank:
+                  self.player.upgrade_weapon(weap)
+          if weap in self.player.pickrank:
+                  self.player.upgrade_pick(weap)
+       player_action = self.actions_based_on_location(choice)
     
     if player_action == "loot":
-         if choice in loot_check:
-             if loot_check[choice]:
+         if choice in self.lootcheck:
+             if self.lootcheck[choice]:
                 print("You've already looted this area.")
                 time.sleep(1)
-                player_action = methods.actions_based_on_location(choice)
+                player_action = self.actions_based_on_location(choice)
              else:
-                methods.looting(choice)
-                loot_check[choice] = True
+                self.looting(choice)
+                self.lootcheck[choice] = True
                 time.sleep(1)
-                player_action = methods.actions_based_on_location(choice)
+                player_action = self.actions_based_on_location(choice)
          else:
            print("There's nothing to loot here.")
            time.sleep(1)
-           player_action = methods.actions_based_on_location(choice)
+           player_action = self.actions_based_on_location(choice)
 
     if player_action == "descend":
-       methods.descend()
-       player_action = methods.actions_based_on_location(choice)
+       self.descend()
+       player_action = self.actions_based_on_location(choice)
 
     if player_action == "givemetorches":
        inventory["Torches"] = inventory.get("Torches", 0) + 80
-       player_action = methods.actions_based_on_location(choice)
+       player_action = self.actions_based_on_location(choice)
 
     if player_action == "tools":
-       print(f"Your current weapon is {player_weapon}")
-       print(f"Your current pickaxe is {player_pickaxe}")
+       print(f"Your current weapon is {self.player.weapon}")
+       print(f"Your current pickaxe is {self.player.tool}")
        time.sleep(1)
-       player_action = methods.actions_based_on_location(choice)
+       player_action = self.actions_based_on_location(choice)
 
     if player_action == "smelt":
-       if inventory.get("Furnace", 0) == 0:  
+       whatsmelt = int(input("""Do you want to smelt: 
+             1. Food
+             2. Ores
+             (input the number)
+             > """))
+       if whatsmelt == 1:
+          ...
+       elif whatsmelt == 2:   
+        if self.playerinventory.get("Furnace", 0) == 0:  
           print("You don't have a Furnace...")
-       elif inventory.get("Coal", 0) == 0:
+        elif self.playerinventory.get("Coal", 0) == 0:
           print("You don't have coal...")
-       else:
-          print(ores)
+        else:
+          print(self.player.ores)
           whatsmelt = input("Which ore are you going to smelt?: ").lower()
           if whatsmelt == "iron" or whatsmelt == "iron ore":
-            methods.smelting("Iron Ore", "Iron")
+            self.smelting("Iron Ore", "Iron")
           elif whatsmelt == "gold" or whatsmelt == "gold ore":
-            methods.smelting("Gold Ore", "Gold")
+            self.smelting("Gold Ore", "Gold")
           else:
            print("lmao fk u tryna smelt?? ")
-       player_action = methods.actions_based_on_location(choice)
+       player_action = self.actions_based_on_location(choice)
+
 
     if player_action == "find":
-       methods.find()
-       player_action = methods.actions_based_on_location(choice)
+       self.find()
+       player_action = self.actions_based_on_location(choice)
 
-    if player_weapon == "Diamond Sword" and player_pickaxe == "Diamond Pickaxe":
-     print("You got a diamond sword and a diamond pickaxe! Congrats!")
-     time.sleep(0.5)
-     print("Thanks for playing!")
+    
     else:
        print("Invalid input, try again.")
        time.sleep(0.5)
@@ -555,4 +554,5 @@ def main():
 
 
 if __name__ == "__main__":
-   main()
+    game = Game()
+    game.main()
