@@ -14,7 +14,7 @@ class Player():
    def __init__(self):
       self.health = 20
       self.inventory = {"Wood": 0, 
-                        "Stick": 0, 
+                        "Sticks": 0, 
                         "Coal": 0, 
                         "Wool": 0, 
                         "Raw Meat": 0,
@@ -339,7 +339,7 @@ class Game():
    time.sleep(1)       
    
    while findtimer > 0:
-      print("""What would you like to do?
+      print("""What would you like to do? 
          [ 
            * Explore - Try to keep finding a structure
            * Leave - Leave it be
@@ -423,27 +423,21 @@ class Game():
          print("You don't see that anywhere...")
          print(poiss)
          choice = input("Where would you like to go next?: ").lower()
-      for p in poiss:
-        if p.lower() == choice:
-          choice = p
-          break 
+      
       print(f"You chose {choice}")
       time.sleep(1)
       print(f"You currently have {self.player.inventory}")
       time.sleep(1)
-      player_action = self.actions_based_on_location(choice).lower() 
+      player_action = self.actions_based_on_location(choice)
  
     if player_action == "mine" and choice == "desert":
      print("Nothing but sand...")
      player_action = self.actions_based_on_location(choice)
-    if player_action == "mine" and (choice == "forest" or choice == "plains"):
-       count = self.wood()
-       print(count)
+    if player_action == "mine" and choice in ("forest", "plains", "village", "shipwreck"):
+       print(f"You got {self.wood()} wood!")
+       time.sleep(1)
        player_action = self.actions_based_on_location(choice)
-    if player_action == "mine" and (choice == "village" or choice == "shipwreck"):
-       count = self.wood()
-       print(count)
-       player_action = self.actions_based_on_location(choice)
+   
     if player_action == "mine" and (choice == "cave" or choice =="ravine"):
        if self.player.tool == "Fists":
           print("You don't even have a pickaxe...")
@@ -488,7 +482,7 @@ class Game():
        player_action = self.actions_based_on_location(choice)
     
     if player_action == "loot":
-         if choice in self.lootcheck:
+         if choice.capitalize() in self.lootcheck:
              if self.lootcheck[choice]:
                 print("You've already looted this area.")
                 time.sleep(1)
@@ -526,9 +520,9 @@ class Game():
        if whatsmelt == 1:
           ...
        elif whatsmelt == 2:   
-        if self.playerinventory.get("Furnace", 0) == 0:  
+        if self.player.inventory.get("Furnace", 0) == 0:  
           print("You don't have a Furnace...")
-        elif self.playerinventory.get("Coal", 0) == 0:
+        elif self.player.inventory.get("Coal", 0) == 0:
           print("You don't have coal...")
         else:
           print(self.player.ores)
@@ -547,11 +541,6 @@ class Game():
        player_action = self.actions_based_on_location(choice)
 
     
-    else:
-       print("Invalid input, try again.")
-       time.sleep(0.5)
-       
-
 
 if __name__ == "__main__":
     game = Game()
