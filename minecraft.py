@@ -92,8 +92,6 @@ class Game():
         "Shipwreck", 
         "Ravine", "Ravine"]
     
- def __str__(self):
-   ...
 
  def craft_item(self, item):
    item = item.lower()
@@ -105,14 +103,14 @@ class Game():
    if not matched_item:
       print("What are you trying to craft?")
       return
-   required = self.player.recipes[matched_item]
+   required = self.recipes[matched_item]
    for res, qty in required.items():
       if self.player.inventory.get(res, 0) < qty:
          print(f"Not enough {res} to craft {matched_item}.")
          return
    for res, qty in required.items():
       self.player.inventory[res] -= qty
-
+      
    self.player.inventory[matched_item] = self.player.inventory.get(matched_item, 0) + 1
    print(f"You crafted a/an {matched_item}!")
    return matched_item
@@ -121,7 +119,7 @@ class Game():
  def wood(self):
     resource1 = random.randint(2,5)
     self.player.inventory["Wood"] = self.player.inventory["Wood"] + resource1
-    return {resource1} 
+    return resource1
     
 
  def stone(self):
@@ -136,16 +134,20 @@ class Game():
        resource7 = random.randint(1,2)
        print(f"You also got {resource7} coal!")
        self.player.inventory["Coal"] = self.player.inventory["Coal"] + resource7
-
+       return
 
  def stick(self):
     if self.player.inventory.get("Wood", 0) >=1:
         self.player.inventory["Wood"] -= 1
         self.player.inventory["Stick"] = self.player.inventory.get("Stick", 0) + 4
         print("You crafted 4 Sticks!")
+        time.sleep(1)
+        return
     else:
         print("You don't have wood...")
-
+        time.sleep(1)
+        return
+    
  def actions_based_on_location(self, loc):
     if loc in ["desert", "ocean"]:
         return "Find", "Try to find a structure"
@@ -226,22 +228,28 @@ class Game():
    print(f"You found {resource5} iron!")
    time.sleep(1)
    self.player.inventory["Iron"] = self.player.inventory["Iron"] + resource5
-   if structure == "Blacksmith":
+   if structure == "Shipwreck": 
+      r = random.randint(3, 5)
+      print(f"You also found {r} gold!")
+      self.player.inventory["Gold"] = self.player.inventory["Gold"] + r
+   if structure == "Village":
       resource6 = random.randint(1,10)
+      print("Oh? Theres something else inside...")
       if resource6 == 7:
          print("Oh? Theres something else inside...")
          time.sleep(1)
          print("A lucky find! You found a Diamond!")
-      else:
-         print("Oh? Theres something else inside...")
-         time.sleep(1)
-         print("Nevermind, It was just trash...")
+         return
+      time.sleep(1)
+      print("Nevermind, it was just trash...")
+      return
 
  def descend(self):
    if self.player.inventory.get("Torches", 0) < 1:
       print("It's too dark too see anything...")
       time.sleep(1)
-      print("You can't pass through")
+      print("You can't pass through...")
+      return
    else:
       while self.player.inventory.get("Torches") >=1 :
          self.player.inventory["Torches"] -= 1
@@ -256,8 +264,10 @@ class Game():
                print(f"You got {ironcount} iron ore!")
                time.sleep(1)
                self.player.ores["Iron Ore"] = self.player.ores.get("Iron Ore", 0) + ironcount
+               return
             elif ironchance == 1 and (self.player.tool == "Fists" or self.player.tool == "Wooden Pickaxe"):
                print("You found Iron! But you failed to mine it...")
+               return
             else:
                pass
          else:
@@ -408,6 +418,7 @@ class Game():
      time.sleep(0.5)
      print("Thanks for playing!")
      break
+    
     spe1, spe2 = self.actions_based_on_location(choice)
     player_action = self.action(spe1, spe2)
 
@@ -482,7 +493,8 @@ class Game():
        player_action = self.actions_based_on_location(choice)
     
     if player_action == "loot":
-         if choice.capitalize() in self.lootcheck:
+         choice = choice.capitalize().strip()
+         if choice in self.lootcheck:
              if self.lootcheck[choice]:
                 print("You've already looted this area.")
                 time.sleep(1)
@@ -511,15 +523,7 @@ class Game():
        time.sleep(1)
        player_action = self.actions_based_on_location(choice)
 
-    if player_action == "smelt":
-       whatsmelt = int(input("""Do you want to smelt: 
-             1. Food
-             2. Ores
-             (input the number)
-             > """))
-       if whatsmelt == 1:
-          ...
-       elif whatsmelt == 2:   
+    if player_action == "smelt":  
         if self.player.inventory.get("Furnace", 0) == 0:  
           print("You don't have a Furnace...")
         elif self.player.inventory.get("Coal", 0) == 0:
@@ -533,7 +537,7 @@ class Game():
             self.smelting("Gold Ore", "Gold")
           else:
            print("lmao fk u tryna smelt?? ")
-       player_action = self.actions_based_on_location(choice)
+        player_action = self.actions_based_on_location(choice)
 
 
     if player_action == "find":
