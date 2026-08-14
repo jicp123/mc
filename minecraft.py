@@ -71,18 +71,18 @@ class Game():
     self.findtimer = 3
     self._daycount = 0
     self.recipes = {
-    "Wooden Pickaxe": {"Wood": 3, "Stick": 2},
-    "Stone Pickaxe": {"Stick": 2, "Cobblestone": 3},
-    "Iron Pickaxe": {"Stick": 2, "Iron": 3},
-    "Diamond Pickaxe": {"Diamond": 3, "Stick": 2,},
+    "Wooden Pickaxe": {"Wood": 3, "Sticks": 2},
+    "Stone Pickaxe": {"Sticks": 2, "Cobblestone": 3},
+    "Iron Pickaxe": {"Sticks": 2, "Iron": 3},
+    "Diamond Pickaxe": {"Diamond": 3, "Sticks": 2,},
     "Furnace": {"Cobblestone": 8},
     "Bed": {"Wood": 3, "Wool": 3},
     "Sticks": {"Wood": 1},
-    "Torches":{"Stick": 1, "Coal": 1},
-    "Wooden Sword": {"Stick": 1, "Wood": 2},
-    "Stone Sword": {"Stick": 1, "Cobblestone": 2},
-    "Iron Sword": {"Stick": 1, "Iron": 2},
-    "Diamond Sword": {"Diamond": 2, "Stick": 1,}
+    "Torches":{"Sticks": 1, "Coal": 1},
+    "Wooden Sword": {"Sticks": 1, "Wood": 2},
+    "Stone Sword": {"Sticks": 1, "Cobblestone": 2},
+    "Iron Sword": {"Sticks": 1, "Iron": 2},
+    "Diamond Sword": {"Diamond": 2, "Sticks": 1,}
             }  
     self.pois = ["Forest", "Forest", "Forest", "Forest", "Forest","Forest", "Forest",
         "Plains", "Plains", "Plains", "Plains", "Plains","Plains", "Plains",
@@ -193,17 +193,10 @@ class Game():
      
      if attack == "attack": 
           while sheep_hp >= 0:
-             sheep_hp -= self.player.dmg 
-             print(f"You dealt {self.player.dmg} damage!")
-             time.sleep(1)
-             print(f"Sheep HP {max(sheep_hp, 0)}/{original_hp}")
-             time.sleep(1)
-             sheep_run = random.randint(1,8)
              
              if attack == "run":
                  return "player_ran"
-                 
-
+                  
              if sheep_hp <= 0:
                 resource4 = random.randint(1,2)
                 print(f"You found {resource4} Wool!")
@@ -220,6 +213,13 @@ class Game():
              if sheep_run == 1:
                  print("The sheep ran away...")
                  return "Ran"
+
+             sheep_hp -= self.player.dmg 
+             print(f"You dealt {self.player.dmg} damage!")
+             time.sleep(1)
+             print(f"Sheep HP {max(sheep_hp, 0)}/{original_hp}")
+             time.sleep(1)
+             sheep_run = random.randint(1,8)
                             
 
  def looting(self, structure):
@@ -252,7 +252,7 @@ class Game():
       print("You can't pass through...")
       return
    else:
-      while self.player.inventory.get("Torches") >=1 :
+      while self.player.inventory.get("Torches", 0) >=1 :
          self.player.inventory["Torches"] -= 1
          print(f"Descending into the caves... (Times descended: {self.descendcount}.) Remaining Torches:",self.player.inventory["Torches"])
          self.descendcount += 1
@@ -298,8 +298,8 @@ class Game():
                diacount = random.randint(1,4)
                print(f"You got {diacount} diamond/s!")
                time.sleep(1)
-               inventory["Diamond"] = inventory.get("Diamond", 0) + diacount
-            elif diachance == 1 and (self.player.tool != ["Iron Pickaxe", "Diamond Pickaxe"]):
+               self.player.inventory["Diamond"] = self.player.inventory.get("Diamond", 0) + diacount
+            elif diachance == 1 and (self.player.tool not in ["Iron Pickaxe", "Diamond Pickaxe"]):
                print("You found Diamonds! But you failed to mine it...")
             else:
                pass
@@ -378,9 +378,11 @@ class Game():
          else:   
           time.sleep(1)
           resource5 = random.randint(5,8)
-          print(f"You found {resource5} iron!")
+          r = random.randint(5,8)
+          print(f"You found {resource5} iron, and {r} gold!")
           time.sleep(1)
-          inventory["Iron"] = inventory["Iron"] + resource5
+          self.player.inventory["Iron"] = self.player.inventory["Iron"] + resource5
+          self.player.inventony["Gold"] = self.player.inventory["gold"] + r
           print("You stopped exploring as you found the pyramid...")
           break
        else:
@@ -414,7 +416,7 @@ class Game():
 
 
   while True:
-    if self.player.weapon == "Diamond Sword" and self.player.weapon == "Diamond Pickaxe":
+    if self.player.weapon == "Diamond Sword" and self.player.tool == "Diamond Pickaxe":
      print("You got a diamond sword and a diamond pickaxe! Congrats!")
      time.sleep(0.5)
      print("Thanks for playing!")
@@ -491,15 +493,15 @@ class Game():
        
     
     if player_action == "loot":
-         choice = choice.capitalize().strip()
+         structure = choice.capitalize().strip()
          if choice in self.lootcheck:
-             if self.lootcheck[choice]:
+             if self.lootcheck[structure]:
                 print("You've already looted this area.")
                 time.sleep(1)
                 
              else:
-                self.looting(choice)
-                self.lootcheck[choice] = True
+                self.looting(structure)
+                self.lootcheck[structure] = True
                 time.sleep(1)
          
          else:
@@ -512,7 +514,7 @@ class Game():
        
 
     if player_action == "givemetorches":
-       inventory["Torches"] = inventory.get("Torches", 0) + 80
+       self.player.inventory["Torches"] = self.player.inventory.get("Torches", 0) + 80
        
 
     if player_action == "tools":
@@ -536,9 +538,7 @@ class Game():
           else:
            print("What were u trying to smelt?? ")
         
-    if player_action == "find" and choice != "desert":
-       print("Invalid input.")
-    else: 
+    if player_action == "find" and choice == "desert":
        self.find()
 
     
