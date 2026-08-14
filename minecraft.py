@@ -45,18 +45,18 @@ class Player():
       self.pickrank = {"Fists": 0, "Wooden Pickaxe": 1, "Stone Pickaxe": 2, "Iron Pickaxe": 3, "Diamond Pickaxe": 5,} 
       self.weapdmg =  {"Fists": 1, "Wooden Sword": 2, "Stone Sword": 3, "Iron Sword": 4, "Diamond Sword": 5,}
 
-      @property
-      def dmg(self):
-         return self.weapdmg.get(self.weap, 1)
+   @property
+   def dmg(self):
+         return self.weapdmg.get(self.weapon, 1)
 
-      def upgrade_weapon(self, new_weapon):
+   def upgrade_weapon(self, new_weapon):
            if self.weaprank.get(new_weapon, 0) > self.weaprank.get(self.weapon, 0):
             print(f"Your current weapon now is {new_weapon}")
             self.weapon = new_weapon
            else:
             print("You already have a better weapon than this...")
 
-      def upgrade_pick(self, new_pickaxe):
+   def upgrade_pick(self, new_pickaxe):
         if self.pickrank.get(new_pickaxe, 0) > self.pickrank.get(self.tool, 0):
           print(f"Your current pickaxe now is {new_pickaxe}")
           self.tool = new_pickaxe
@@ -149,6 +149,7 @@ class Game():
         return
     
  def actions_based_on_location(self, loc):
+    loc = loc.lower().strip()
     if loc in ["desert", "ocean"]:
         return "Find", "Try to find a structure"
     elif loc in ["village", "shipwreck"]:
@@ -192,8 +193,8 @@ class Game():
      
      if attack == "attack": 
           while sheep_hp >= 0:
-             sheep_hp -= self.player.weapdmg 
-             print(f"You dealt {self.player.weapdmg} damage!")
+             sheep_hp -= self.player.dmg 
+             print(f"You dealt {self.player.dmg} damage!")
              time.sleep(1)
              print(f"Sheep HP {max(sheep_hp, 0)}/{original_hp}")
              time.sleep(1)
@@ -439,22 +440,19 @@ class Game():
       time.sleep(1)
       print(f"You currently have {self.player.inventory}")
       time.sleep(1)
-      player_action = self.actions_based_on_location(choice)
  
     if player_action == "mine" and choice == "desert":
      print("Nothing but sand...")
-     player_action = self.actions_based_on_location(choice)
     if player_action == "mine" and choice in ("forest", "plains", "village", "shipwreck"):
        print(f"You got {self.wood()} wood!")
        time.sleep(1)
-       player_action = self.actions_based_on_location(choice)
+      
    
     if player_action == "mine" and (choice == "cave" or choice =="ravine"):
        if self.player.tool == "Fists":
           print("You don't even have a pickaxe...")
        else:
           self.stone()
-       player_action = self.actions_based_on_location(choice)
 
     if player_action == "hunt":
        print("You found a sheep!")
@@ -462,7 +460,6 @@ class Game():
        sheep_hp = random.randint(5,10)
        original_hp = sheep_hp 
        self.sheep_hunt(sheep_hp, original_hp)
-       player_action = self.actions_based_on_location(choice)
 
     if player_action == "craft":
        print("""Here are the craftable items,
@@ -486,11 +483,12 @@ class Game():
           self.stick()
        else:
           weap = self.craft_item(crafting)
-          if weap in self.player.weaprank:
-                  self.player.upgrade_weapon(weap)
-          if weap in self.player.pickrank:
-                  self.player.upgrade_pick(weap)
-       player_action = self.actions_based_on_location(choice)
+          if weap:
+            if weap in self.player.weaprank:
+                self.player.upgrade_weapon(weap)
+            if weap in self.player.pickrank:
+                self.player.upgrade_pick(weap)
+       
     
     if player_action == "loot":
          choice = choice.capitalize().strip()
@@ -498,30 +496,30 @@ class Game():
              if self.lootcheck[choice]:
                 print("You've already looted this area.")
                 time.sleep(1)
-                player_action = self.actions_based_on_location(choice)
+                
              else:
                 self.looting(choice)
                 self.lootcheck[choice] = True
                 time.sleep(1)
-                player_action = self.actions_based_on_location(choice)
+         
          else:
            print("There's nothing to loot here.")
            time.sleep(1)
-           player_action = self.actions_based_on_location(choice)
+        
 
     if player_action == "descend":
        self.descend()
-       player_action = self.actions_based_on_location(choice)
+       
 
     if player_action == "givemetorches":
        inventory["Torches"] = inventory.get("Torches", 0) + 80
-       player_action = self.actions_based_on_location(choice)
+       
 
     if player_action == "tools":
        print(f"Your current weapon is {self.player.weapon}")
        print(f"Your current pickaxe is {self.player.tool}")
        time.sleep(1)
-       player_action = self.actions_based_on_location(choice)
+       
 
     if player_action == "smelt":  
         if self.player.inventory.get("Furnace", 0) == 0:  
@@ -536,13 +534,12 @@ class Game():
           elif whatsmelt == "gold" or whatsmelt == "gold ore":
             self.smelting("Gold Ore", "Gold")
           else:
-           print("lmao fk u tryna smelt?? ")
-        player_action = self.actions_based_on_location(choice)
-
-
-    if player_action == "find":
+           print("What were u trying to smelt?? ")
+        
+    if player_action == "find" and choice != "desert":
+       print("Invalid input.")
+    else: 
        self.find()
-       player_action = self.actions_based_on_location(choice)
 
     
 
